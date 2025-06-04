@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/sunnysingha911/user-service/database"
 	"github.com/sunnysingha911/user-service/models"
+	"github.com/sunnysingha911/user-service/services"
 	"github.com/sunnysingha911/user-service/utils"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -78,25 +79,16 @@ func SignIn(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
 	}
 
-	// Find user by email
-	var user models.User
-	if err := database.DB.Where("email = ?", body.Email).First(&user).Error; err != nil {
+	res, err := services.Login(body.Email, body.Password)
+	if err == services.ErrInvalidCredentials {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
 	}
-
-	// Compare password
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
-	}
-
-	// Generate JWT token
-	token, err := utils.GenerateJWT(user.ID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "could not generate token"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "internal error"})
 	}
 
 	return c.JSON(fiber.Map{
-		"user":  buildUserResponse(&user),
-		"token": token,
+		"user":  buildUserResponse(res.User),
+		"token": res.Token,
 	})
 }
