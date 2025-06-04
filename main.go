@@ -8,6 +8,7 @@ import (
 
 	"github.com/sunnysingha911/user-service/config"
 	"github.com/sunnysingha911/user-service/database"
+	"github.com/sunnysingha911/user-service/grpc/listeners"
 	"github.com/sunnysingha911/user-service/routes/v1"
 )
 
@@ -21,6 +22,15 @@ func main() {
 	if err := database.Connect(); err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
+
+	grpcServer := listeners.NewUserGRPCServer(config.GRPCUserHost)
+
+	go func() {
+
+		if err := grpcServer.Run(); err != nil {
+			log.Fatalf("gRPC server failed: %v", err)
+		}
+	}()
 
 	app := fiber.New()
 
