@@ -58,3 +58,6 @@ compose-up:
 # Stop and remove containers created by docker-compose
 compose-down:
 	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down
+
+
+# protoc --go_out=. --go-grpc_out=. proto\user.proto
