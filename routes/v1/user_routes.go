@@ -15,4 +15,5 @@ func UserRoutes(app fiber.Router) {
 	protected := app.Group("/", middlewares.AuthRequired)
 	protected.Get("/me", handlers.GetMe)
 	protected.Get("/all-users", handlers.GetAllUsers)
+	protected.Get("/:id", handlers.GetUserById)
 }

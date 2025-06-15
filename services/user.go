@@ -6,14 +6,18 @@ import (
 	"github.com/sunnysingha911/user-service/utils"
 )
 
-type UserResponse struct {
+type UserListResponse struct {
 	Users []*models.User
 	Total int64
 	Page  int
 	Limit int
 }
 
-func GetUserList(page, limit int) (*UserResponse, error) {
+type UserResponse struct {
+	User *models.User
+}
+
+func GetUserList(page, limit int) (*UserListResponse, error) {
 	var users []*models.User
 	var total int64
 
@@ -29,10 +33,24 @@ func GetUserList(page, limit int) (*UserResponse, error) {
 		return nil, err
 	}
 
-	return &UserResponse{
+	return &UserListResponse{
 		Users: users,
 		Total: total,
 		Page:  page,
 		Limit: limit,
+	}, nil
+}
+
+func GetUserById(userId string) (*UserResponse, error) {
+	var user models.User
+
+	db := database.DB
+
+	if err := db.First(&user, "id = ?", userId).Error; err != nil {
+		return nil, err
+	}
+
+	return &UserResponse{
+		User: &user,
 	}, nil
 }

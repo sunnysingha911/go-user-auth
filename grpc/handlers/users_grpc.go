@@ -10,10 +10,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// type UsersServiceServer struct {
-// 	userpb.UnimplementedUserServiceServer
-// }
-
 func toProtoUser(user *models.User) *userpb.User {
 	return &userpb.User{
 		Id:        user.ID.String(),
@@ -48,5 +44,19 @@ func (s *AuthServiceServer) GetAllUsers(ctx context.Context, req *userpb.GetAllU
 			Page:  int32(res.Page),
 			Total: int32(res.Total),
 		},
+	}, nil
+}
+
+func (s *AuthServiceServer) GetUserById(ctx context.Context, req *userpb.GetUserRequest) (*userpb.GetUserResponse, error) {
+	res, err := services.GetUserById(req.Id)
+	if err == services.ErrInvalidCredentials {
+		return nil, status.Error(codes.Unauthenticated, "invalid credentials")
+	}
+	if err != nil {
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &userpb.GetUserResponse{
+		User: toProtoUser(res.User),
 	}, nil
 }

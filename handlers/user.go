@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"github.com/sunnysingha911/user-service/models"
 	"github.com/sunnysingha911/user-service/services"
 )
@@ -52,5 +53,28 @@ func GetAllUsers(c *fiber.Ctx) error {
 			"page":  res.Page,
 			"limit": res.Limit,
 		},
+	})
+}
+
+func GetUserById(c *fiber.Ctx) error {
+	id := c.Params("id")
+	_, err := uuid.Parse(id)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid UUID format",
+		})
+	}
+
+	// Call service
+	res, err := services.GetUserById(id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to fetch user",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"user": res.User,
 	})
 }
